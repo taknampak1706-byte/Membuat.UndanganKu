@@ -4,7 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Undangan Pernikahan</title>
-<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@400;600&family=Cormorant+Garamond:wght@400;600&family=Lora:wght@400;600&family=Jost:wght@300;400;500&family=Dancing+Script:wght@500&family=Allura&family=Pacifico&family=Satisfy&family=Sacramento&family=Parisienne&family=Caveat:wght@500&family=Cinzel:wght@500&family=Merriweather:wght@400;700&family=Montserrat:wght@400;600&family=Poppins:wght@400;600&family=Lobster&family=Abril+Fatface&family=Bebas+Neue&family=Amatic+SC:wght@700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@400;600&family=Cormorant+Garamond:wght@400;600&family=Lora:wght@400;600&family=Jost:wght@300;400;500&family=Dancing+Script:wght@500&family=Allura&family=Pacifico&family=Satisfy&family=Sacramento&family=Parisienne&family=Caveat:wght@500&family=Cinzel:wght@500&family=Merriweather:wght@400;700&family=Montserrat:wght@400;600&family=Poppins:wght@400;600&family=Lobster&family=Abril+Fatface&family=Bebas+Neue&family=Amatic+SC:wght@700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 <style>
 :root{--bg:#fbf9f4;--card:#fff;--ink:#2b2a26;--soft:#7a756a;--deep:#6b4f1d;--navy:#1d2a5b;--gold:#b8975a;--line:#e8e1d2;--paper:#f1e8d4;--serif:'Playfair Display',Georgia,serif;--script:'Great Vibes','Brush Script MT',cursive;--sans:'Jost',system-ui,sans-serif;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1a17;--card:#26241f;--ink:#f1ede4;--soft:#b3ab9b;--line:#3a372f}}
@@ -412,8 +414,10 @@ var SLUG="",REMOTE=null;
   q=(q||"").toLowerCase();
   if(!/^[a-z0-9-]{3,40}$/.test(q)||!CLOUD.dbUrl)return;
   SLUG=q;
-  try{var x=new XMLHttpRequest();x.open("GET",CLOUD.dbUrl.replace(/\/+$/,"")+"/inv/"+q+"/d.json",false);x.send();
-    if(x.status===200&&x.responseText&&x.responseText!=="null")REMOTE=JSON.parse(x.responseText)}catch(e){}
+    try{var ck=localStorage.getItem("rm_"+q);if(ck)REMOTE=JSON.parse(ck)}catch(e){}
+  var u=CLOUD.dbUrl.replace(/\/+$/,"")+"/inv/"+q+"/d.json";
+  if(REMOTE){fetch(u).then(function(r){return r.text()}).then(function(t){if(t&&t!=="null")localStorage.setItem("rm_"+q,t)}).catch(function(){})}
+  else{try{var x=new XMLHttpRequest();x.open("GET",u,false);x.send();if(x.status===200&&x.responseText&&x.responseText!=="null"){REMOTE=JSON.parse(x.responseText);try{localStorage.setItem("rm_"+q,x.responseText)}catch(e){}}}catch(e){}}
 })();
 </script>
 <script>
@@ -911,4 +915,158 @@ const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.targ
 document.querySelectorAll(".rv").forEach(x=>io.observe(x));
 </script>
 </body>
-</html>
+</html><script>
+(function(){
+if(!ST.el)ST.el={};
+var css=document.createElement("style");
+css.textContent=`
+#cover{background-image:none;transition:transform .8s cubic-bezier(.7,0,.3,1)}
+.frw{filter:none;transition:transform 1s cubic-bezier(.55,0,.25,1);will-change:transform}
+.fl,.ft,.fb{transition:opacity .6s ease 0s,transform .8s ease 0s;will-change:opacity}
+.seal{transition:filter .5s ease 0s}
+#cover.op #mono{transition:opacity .4s ease .1s}
+#cover.op .ring{transition:stroke-dashoffset .8s ease .2s}
+#cover.op #mono text{transition:opacity .5s ease .1s}
+.rv{transition:opacity .5s,transform .5s}
+.ea{animation-fill-mode:both;animation-play-state:paused;animation-timing-function:ease}
+.ea.go2,body.edit .ea{animation-play-state:running}
+body.edit .esel{outline:2px dashed #b8975a;outline-offset:3px}
+.pk2{display:flex;align-items:center;gap:.5rem;margin:.6rem 0}
+.pk2 span{flex:1}
+.pk2 b{min-width:3.6rem;text-align:center;font:500 .9rem var(--sans)}
+.pk2 button{width:52px;height:46px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:600 1.4rem var(--sans);cursor:pointer;touch-action:manipulation}
+`;
+document.head.appendChild(css);
+
+function fastOpen(){
+  if(opened)return;opened=true;
+  var cv=$("cover");cv.classList.add("op");playM();
+  setTimeout(function(){cv.classList.add("out");document.body.classList.remove("lock");document.body.classList.add("open")},
+    matchMedia("(prefers-reduced-motion:reduce)").matches?0:(cv.classList.contains("photo")?500:1500));
+}
+$("openB").onclick=fastOpen;$("seal").onclick=fastOpen;
+bg.preload="auto";
+
+var EL=[
+["cT","Cover: tulisan atas","#cvT"],["cN","Cover: nama mempelai","#cvN"],["cG","Cover: kotak nama tamu",".gst"],["cB","Cover: tombol buka","#openB"],["cS","Cover: segel","#seal"],
+["hT","Isi: The Wedding of","#hT"],["hN","Isi: nama mempelai","#hN"],["hF","Isi: foto utama","#hFoto"],["hD","Isi: tanggal","#hD"],["hC","Isi: hitung mundur",".cd"],
+["ay","Ayat: teks","#ayat"],["as","Ayat: sumber","#ayatSrc"],
+["tm","Mempelai: judul",'[data-s="mempelai"] h2'],["m1","Mempelai: pria",".couple>div:nth-child(1)"],["m2","Mempelai: wanita",".couple>div:nth-child(2)"],
+["ta","Acara: judul",'[data-s="acara"] h2'],["ac","Acara: kartu","#evs .card"],
+["tk","Kisah: judul",'[data-s="kisah"] h2'],["ks","Kisah: daftar","#story"],
+["td","Doa: judul",'[data-s="doa"] h2'],["dk","Doa: kartu","#doa .card"],
+["tg","Amplop: judul",'[data-s="amplop"] h2'],["am","Amplop: rekening","#gifts"],["qr","Amplop: QR","#qrW"],
+["lv","Live streaming",".live"],
+["tr","RSVP: judul",'[data-s="rsvp"] h2'],["rs","RSVP: formulir",'[data-s="rsvp"] .card'],
+["th","Terima kasih: teks","#thx"],["eN","Terima kasih: nama","#eN"],["ft","Kaki halaman","#foot"]
+];
+var kf=function(a){return"k"+a[0].toUpperCase()+a.slice(1)};
+var cur="cN";
+var cfg=function(k){k=k||cur;return ST.el[k]=ST.el[k]||{}};
+var io3=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)e.target.classList.add("go2")})},{threshold:.05});
+
+function applyEl(){
+  EL.forEach(function(a){
+    var c=ST.el[a[0]]||{};
+    document.querySelectorAll(a[2]).forEach(function(e){
+      var s=e.style;
+      s.translate=(c.x||c.y)?(c.x||0)+"px "+(c.y||0)+"px":"";
+      s.scale=(c.s&&c.s!==100)?c.s/100:"";
+      if(a[0]!=="cN"||c.f)s.fontFamily=c.f?c.f+",serif":(a[0]==="cN"?s.fontFamily:"");
+      if(c.an){
+        e.classList.add("ea");
+        s.animationName=kf(c.an);s.animationDuration=(c.ad||1.5)+"s";s.animationDelay=(c.adl||0)+"s";s.animationIterationCount=c.ai||"1";
+        io3.observe(e);
+      }else if(e.classList.contains("ea")){
+        e.classList.remove("ea","go2");s.animationName="";io3.unobserve(e);
+      }
+      e.classList.toggle("esel",a[0]===cur&&$("elHi")&&$("elHi").checked);
+    });
+  });
+}
+function replay(){
+  var a=EL.find(function(x){return x[0]===cur}),c=cfg();if(!a||!c.an)return;
+  document.querySelectorAll(a[2]).forEach(function(e){
+    e.style.animationName="none";void e.offsetWidth;e.style.animationName=kf(c.an);e.classList.add("go2");
+  });
+}
+
+$("bTabs").insertAdjacentHTML("afterbegin",'<button type="button" role="tab" data-t="atur">Atur</button>');
+var pn=document.createElement("div");pn.className="pn";pn.dataset.p="atur";
+pn.innerHTML=
+'<div class="gt">Pilih elemen</div>'+
+'<select id="elS" aria-label="Elemen">'+EL.map(function(a){return'<option value="'+a[0]+'">'+a[1]+'</option>'}).join("")+'</select>'+
+'<label style="display:flex;gap:.5rem;align-items:center"><input type="checkbox" id="elTap" style="width:auto" checked> Ketuk elemen di halaman untuk memilih</label>'+
+'<label style="display:flex;gap:.5rem;align-items:center"><input type="checkbox" id="elHi" style="width:auto" checked> Beri garis pada elemen terpilih</label>'+
+'<div class="gt">Posisi dan ukuran</div>'+
+'<label for="elStep">Langkah geser</label><select id="elStep"><option value="1">1 px</option><option value="5" selected>5 px</option><option value="10">10 px</option><option value="25">25 px</option></select>'+
+'<div id="elCtl">'+
+'<div class="pk2"><span>Kiri - Kanan</span><button type="button" data-d="x:-1">-</button><b id="vx">0</b><button type="button" data-d="x:1">+</button></div>'+
+'<div class="pk2"><span>Atas - Bawah</span><button type="button" data-d="y:-1">-</button><b id="vy">0</b><button type="button" data-d="y:1">+</button></div>'+
+'<div class="pk2"><span>Ukuran</span><button type="button" data-d="s:-1">-</button><b id="vs">100%</b><button type="button" data-d="s:1">+</button></div>'+
+'</div>'+
+'<div class="gt">Huruf</div><select id="elF" aria-label="Huruf"></select>'+
+'<div class="gt">Gerak animasi</div>'+
+'<label for="elA">Gaya gerak</label><select id="elA"></select>'+
+'<label for="elD">Durasi (detik)</label><input type="range" id="elD" min=".3" max="8" step=".1" value="1.5">'+
+'<label for="elL">Tunda mulai (detik)</label><input type="range" id="elL" min="0" max="8" step=".1" value="0">'+
+'<label for="elI">Ulangi</label><select id="elI"><option value="1">1 kali</option><option value="2">2 kali</option><option value="3">3 kali</option><option value="infinite">Terus-menerus</option></select>'+
+'<p style="margin-top:.8rem"><button class="btn alt" id="elRp" type="button">Putar ulang animasi</button> <button class="btn alt" id="elRs" type="button">Reset elemen ini</button></p>'+
+'<p class="hint">Tombol - dan + bisa ditahan agar bergerak terus. Matikan ketuk-pilih jika ingin mengetik langsung di teks halaman.</p>';
+$("bBody").appendChild(pn);
+$("elF").replaceChildren.apply($("elF"),[new Option("Bawaan","")].concat(TF.map(function(n){return new Option(n,"'"+n+"'")})));
+$("elA").innerHTML=AN.map(function(a){return'<option value="'+a[0]+'">'+a[1]+'</option>'}).join("");
+
+function show(){
+  var c=cfg();
+  $("elS").value=cur;$("vx").textContent=c.x||0;$("vy").textContent=c.y||0;$("vs").textContent=(c.s||100)+"%";
+  $("elF").value=c.f||"";$("elA").value=c.an||"";$("elD").value=c.ad||1.5;$("elL").value=c.adl||0;$("elI").value=c.ai||"1";
+}
+function pick(k){cur=k;show();applyEl()}
+$("elS").onchange=function(e){pick(e.target.value)};
+
+var hold,rpt;
+function stepBy(p){
+  var a=p.split(":"),k=a[0],d=+a[1],c=cfg();
+  if(k==="s")c.s=Math.max(10,Math.min(500,(c.s||100)+d*5));
+  else c[k]=(c[k]||0)+d*(+$("elStep").value);
+  applyEl();show();
+}
+function stop(){clearTimeout(hold);clearInterval(rpt);if(hold){hold=0;save()}}
+$("elCtl").addEventListener("pointerdown",function(e){
+  var b=e.target.closest("[data-d]");if(!b)return;e.preventDefault();
+  var p=b.dataset.d;stepBy(p);
+  hold=setTimeout(function(){rpt=setInterval(function(){stepBy(p)},70)},400);
+});
+["pointerup","pointerleave","pointercancel"].forEach(function(t){$("elCtl").addEventListener(t,stop)});
+
+$("elF").onchange=function(e){cfg().f=e.target.value;applyEl();save()};
+$("elA").onchange=function(e){
+  var c=cfg();c.an=e.target.value;var a=AN.find(function(x){return x[0]===c.an});
+  c.ai=a&&a[2]?"infinite":"1";$("elI").value=c.ai;applyEl();replay();save();
+};
+[["elD","ad",1],["elL","adl",1],["elI","ai",0]].forEach(function(r){
+  $(r[0]).addEventListener(r[2]?"input":"change",function(e){cfg()[r[1]]=r[2]?+e.target.value:e.target.value;applyEl();replay();save()});
+});
+$("elRp").onclick=replay;
+$("elRs").onclick=function(){
+  var a=EL.find(function(x){return x[0]===cur});
+  document.querySelectorAll(a[2]).forEach(function(e){e.style.translate="";e.style.scale="";e.style.animationName="";e.classList.remove("ea","go2")});
+  delete ST.el[cur];applyEl();show();save();toast("Elemen dikembalikan");
+};
+$("elHi").onchange=applyEl;
+
+document.addEventListener("click",function(e){
+  if(!document.body.classList.contains("edit")||!$("elTap").checked||!$("bar").classList.contains("on")||$("bar").contains(e.target))return;
+  for(var i=0;i<EL.length;i++){
+    var m=e.target.closest(EL[i][2]);
+    if(m){e.preventDefault();e.stopPropagation();pick(EL[i][0]);toast(EL[i][1]);return}
+  }
+},true);
+
+var _a=applyAll;applyAll=function(){_a.apply(this,arguments);applyEl()};
+var _r=refresh;refresh=function(){_r.apply(this,arguments);applyEl();show()};
+var rq;new MutationObserver(function(){cancelAnimationFrame(rq);rq=requestAnimationFrame(applyEl)}).observe($("app"),{childList:true,subtree:true});
+show();applyEl();
+})();
+</script>
